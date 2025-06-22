@@ -128,26 +128,34 @@ def recalculate_ISF_with_new_background(ddm_dataset,
         elif "av_fft_offrame" in ddm_dataset:
             avg_ft = ddm_dataset['av_fft_offrame']
         if background_method==0:
+            print("background_method = 0: using power spec of images")
             number_of_hi_qs = int(0.1*len(ddm_dataset.q))
             ddm_dataset['B'] = 2*avg_ft[-1*number_of_hi_qs:].mean()
             ddm_dataset['B_std'] = 2*avg_ft[-1*number_of_hi_qs:].std()
         elif background_method==1:
+            print("background_method = 1: using min of ddm matrix")
             ddm_dataset['B'] = ddm_dataset.ddm_matrix[1:,1:].min()
         elif background_method==2:
+            print("background_method = 2: using mean of ddm matrix for highest q")
             ddm_dataset['B'] = ddm_dataset.ddm_matrix[1:,-1].mean()
         elif background_method==3:
+            print("background_method = 3: setting B=0")
             ddm_dataset['B'] = 0
         elif background_method==4:
             number_of_hi_qs = int(0.1*len(ddm_dataset.q))
             if "ft_of_avg_image" in ddm_dataset:
+                print("background_method = 4: using power spec of images minus FT of avg image (goes with amplitude_method=0)")
                 ddm_dataset['B'] = 2*np.mean(avg_ft[-1*number_of_hi_qs:] - ddm_dataset.ft_of_avg_image[-1*number_of_hi_qs:])
                 ddm_dataset['B_std'] = 2*np.std(avg_ft[-1*number_of_hi_qs:] - ddm_dataset.ft_of_avg_image[-1*number_of_hi_qs:])
             else:
+                background_method = 0
+                print("background_method = 0: using power spec of images")
                 ddm_dataset['B'] = 2*avg_ft[-1*number_of_hi_qs:].mean()
                 ddm_dataset['B_std'] = 2*avg_ft[-1*number_of_hi_qs:].std()
         elif background_method==5:
             bgs = np.zeros_like(ddm_dataset.q)
             time_pts = 5
+            print("background_method = 5: fitting first %i time pts of ddm matrix with polyfit(order=2) to get B(q)" % time_pts)
             for i in range(1,len(ddm_dataset.q)):
                 times = ddm_dataset.lagtime[0:time_pts]
                 dqt = ddm_dataset.ddm_matrix[0:time_pts, i]
@@ -164,11 +172,13 @@ def recalculate_ISF_with_new_background(ddm_dataset,
         if amplitude_method == 0:
             if "ft_of_avg_image" in ddm_dataset:
                 aplusb_half = avg_ft - ddm_dataset['ft_of_avg_image']
+                print("amplitude_method = 0: using variance (avg of all img FTs minus FT of avg image). Goes with background_method=4")
             else:
                 aplusb_half = avg_ft
                 amplitude_method = 1
         elif amplitude_method == 1:
             aplusb_half = avg_ft
+            print("amplitude_method = 1: using avg of all img FTs. Goes with background_method=0")
         elif amplitude_method == 2:
             if "ft_of_avg_image" in ddm_dataset:
                 aplusb_half = avg_ft - hf.smoothstep(lowq_edge,highq_edge,ddm_dataset.q)*ddm_dataset['ft_of_avg_image']
@@ -639,12 +649,16 @@ class DDM_Analysis:
             for overlap_method=2, we would only use 50 of those. This is for quickening up the computation. 
         **background_method : {0,1,2,3,4,5}, optional
             Optional keyword argument. Will be set to 0 if not specified here nor in the YAML file. 
-            Determines how we estimate the :math:`B` parameter. This can be done by lookinag the average of the 
+            Determines how we estimate the :math:`B` parameter. This can be done by looking at the average of the 
             Fourier transform of each image (not image difference!) squared (that's background_method=0). We could 
             also use the minimum of the DDM matrix (background_method=1). Or we could use the average DDM matrix for 
-            the largest q (background_method=2). Or we could just set :math:`B` to zero (background_method=3).
+            the largest q (background_method=2). Or we could just set :math:`B` to zero (background_method=3). Option 4 is
+            similar to option 0, but the FTs of each image are averaged and then we subtract the FT of the avg image. Option 
+            5 does not assume that B is indepedent of q. For each q, we fit the first 5 time points of the DDM matrix 
+            to a 2nd order polynomial and take B to be the y-intercept. 
         **amplitude_method: {0,1,2}, optional
-            Optional keyword argument. 
+            Optional keyword argument. If 0, we estimate amplitude by taking power spectrum of all images and subtracting 
+            the FT of the avg image (squared). If 1 (default), then we use just the power spectrum. 
         **number_lag_times : int
             Optional keyword argument. Must be set in the YAML file. 
             You may pass this optional keyword argument if you want to overwrite the value for the number of lag 
@@ -883,19 +897,24 @@ class DDM_Analysis:
         if self.background_method==0:
             ddm_dataset['B'] = 2*ddm_dataset.avg_image_ft[-1*number_of_hi_qs:].mean()
             ddm_dataset['B_std'] = 2*ddm_dataset.avg_image_ft[-1*number_of_hi_qs:].std()
+            print(" background_method = 0: using power spec of images")
             print(f" Background estimate ± std is {ddm_dataset.B.values:.2f} ± {ddm_dataset.B_std.values:.2f}")
         elif self.background_method==1:
             ddm_dataset['B'] = ddm_dataset.ddm_matrix[1:,1:].min()
+            print(" background_method = 1: using min of ddm matrix")
             print(f" Background estimate is {ddm_dataset.B.values:.2f}")
         elif self.background_method==2:
             ddm_dataset['B'] = ddm_dataset.ddm_matrix[1:,-1].mean()
+            print(" background_method = 2: using mean of ddm matrix for highest q")
             print(f" Background estimate is {ddm_dataset.B.values:.2f}")
         elif self.background_method==3:
             ddm_dataset['B'] = 0
+            print(" background_method = 3: setting B=0")
             print(f" Background estimate is {ddm_dataset.B.values:.2f}")
         elif self.background_method==4:
             ddm_dataset['B'] = 2*np.mean(ddm_dataset.avg_image_ft[-1*number_of_hi_qs:] - ddm_dataset.ft_of_avg_image[-1*number_of_hi_qs:])
             ddm_dataset['B_std'] = 2*np.std(ddm_dataset.avg_image_ft[-1*number_of_hi_qs:] - ddm_dataset.ft_of_avg_image[-1*number_of_hi_qs:])
+            print(" background_method = 4: using power spec of images minus FT of avg image (goes with amplitude_method=0)")
             print(f" Background estimate ± std is {ddm_dataset.B.values:.2f} ± {ddm_dataset.B_std.values:.2f}")
         elif self.background_method==5:
             bgs = np.zeros_like(ddm_dataset.q)
@@ -907,13 +926,18 @@ class DDM_Analysis:
                 bgs[i] = pfit[-1]
             ddm_dataset['B'] = xr.DataArray(bgs, {'q': ddm_dataset.ddm_matrix.q})
             ddm_dataset['B_std'] = np.std(bgs)
+            avg_B = ddm_dataset['B'].mean()
+            print(" background_method = 5: fitting first %i time pts of ddm matrix with polyfit(order=2) to get B(q)" % time_pts)
+            print(f" Background estimate assumes B depends of q. Avg of B across all q is {avg_B:.2f}.")
         
 
         # Calculate amplitude: av_fft_frame=0.5(A+B)->A=2*av_fft_frame-B
         if self.amplitude_method == 0:
             aplusb_half = ddm_dataset['avg_image_ft'] - ddm_dataset['ft_of_avg_image']
+            print(" amplitude_method = 0: using variance (avg of all img FTs minus FT of avg image). Goes with background_method=4")
         elif self.amplitude_method == 1:
             aplusb_half = ddm_dataset['avg_image_ft']
+            print(" amplitude_method = 1: using avg of all img FTs. Goes with background_method=0")
         elif self.amplitude_method == 2:
             aplusb_half = ddm_dataset['avg_image_ft'] - hf.smoothstep(2,5,self.q)*ddm_dataset['ft_of_avg_image']
         ddm_dataset["Amplitude"] = (2 * aplusb_half) - ddm_dataset.B
