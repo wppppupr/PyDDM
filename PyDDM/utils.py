@@ -426,7 +426,7 @@ def plot_background(fit, color='m', color2='k'):
     if fit.B.size==1:
         plt.hlines(fit.B,fit.q[1],fit.q.max(),color2, linestyles='dashed', label="Background estimated from images")
     else:
-        plt.semilogx(fit.B[1:],fit.q[1:], color+'s', label="Background estimate")
+        plt.semilogx(fit.q[1:], fit.B[1:], color+'s', label="Background estimate")
 
     plt.xlabel("q (μm$^{-1}$)")
     plt.ylabel("Background (a.u.)")
