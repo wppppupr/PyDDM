@@ -510,11 +510,15 @@ So for example, with a lag time of 1 frame and
 a movie that has 1000 frames, we could theoretically use 999 differences of images (and we would for the other methods). But
 for overlap_method=2, we would only use 50 of those. This is for quickening up the computation.</p></li>
 <li><p><strong>**background_method</strong> (<em>{0</em><em>,</em><em>1</em><em>,</em><em>2</em><em>,</em><em>3</em><em>,</em><em>4</em><em>,</em><em>5}</em><em>, </em><em>optional</em>) – Optional keyword argument. Will be set to 0 if not specified here nor in the YAML file.
-Determines how we estimate the <span class="math notranslate nohighlight">\(B\)</span> parameter. This can be done by lookinag the average of the
+Determines how we estimate the <span class="math notranslate nohighlight">\(B\)</span> parameter. This can be done by looking at the average of the
 Fourier transform of each image (not image difference!) squared (that’s background_method=0). We could
 also use the minimum of the DDM matrix (background_method=1). Or we could use the average DDM matrix for
-the largest q (background_method=2). Or we could just set <span class="math notranslate nohighlight">\(B\)</span> to zero (background_method=3).</p></li>
-<li><p><strong>**amplitude_method</strong> (<em>{0</em><em>,</em><em>1</em><em>,</em><em>2}</em><em>, </em><em>optional</em>) – Optional keyword argument.</p></li>
+the largest q (background_method=2). Or we could just set <span class="math notranslate nohighlight">\(B\)</span> to zero (background_method=3). Option 4 is
+similar to option 0, but the FTs of each image are averaged and then we subtract the FT of the avg image. Option
+5 does not assume that B is indepedent of q. For each q, we fit the first 5 time points of the DDM matrix
+to a 2nd order polynomial and take B to be the y-intercept.</p></li>
+<li><p><strong>**amplitude_method</strong> (<em>{0</em><em>,</em><em>1</em><em>,</em><em>2}</em><em>, </em><em>optional</em>) – Optional keyword argument. If 0, we estimate amplitude by taking power spectrum of all images and subtracting
+the FT of the avg image (squared). If 1 (default), then we use just the power spectrum.</p></li>
 <li><p><strong>**number_lag_times</strong> (<em>int</em>) – Optional keyword argument. Must be set in the YAML file.
 You may pass this optional keyword argument if you want to overwrite the value for the number of lag
 times set in the YAML file.</p></li>
