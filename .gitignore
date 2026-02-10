@@ -142,3 +142,6 @@ Examples/twotimecorr_q20.pickle
 Examples/01_25C_2TCF_q10.pickle
 Examples/DDM - Generating data for training - 2021-08-19.ipynb
 Examples/Example - phiDM and time varying.ipynb
+# pixi environments
+.pixi/*
+!.pixi/config.toml

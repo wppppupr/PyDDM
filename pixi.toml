@@ -1,0 +1,18 @@
+[workspace]
+authors = ["Sasaki_ubuntu <0704waffle@gmail.com>"]
+channels = ["conda-forge"]
+name = "PyDDM"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+scikit-image = ">=0.26.0,<0.27"
+numpy = ">=2.4.2,<3"
+xarray = ">=2026.1.0,<2027"
+pandas = ">=3.0.0,<4"
+matplotlib = ">=3.10.8,<4"
+nd2reader = ">=3.3.1,<4"
+scikit-learn = ">=1.8.0,<2"
+scipy = ">=1.17.0,<2"
