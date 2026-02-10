@@ -8,7 +8,7 @@ import glob
 import pickle
 import numpy as np
 import itertools
-import ddm_calc as ddm
+
 from scipy.special import gamma
 from skimage import io 
 from skimage.transform import downscale_local_mean #For binning
@@ -22,6 +22,11 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.backends.backend_pdf import PdfPages
+
+import sys
+sys.path.append("../PyDDM/PyDDM")
+import ddm_calc as ddm
+
 try:
     from nd2reader import ND2Reader #https://github.com/Open-Science-Tools/nd2reader
     able_to_open_nd2 = True
